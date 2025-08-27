@@ -1,19 +1,31 @@
 const { Router } = require("express");
 const { userAuth } = require("../middlewares/user");
-const { PurchasesModel, CoursesModel} = require("../db")
+const { UserModel, CoursesModel} = require("../db")
 const coursesRouter = Router();
 
-coursesRouter.post("/purchase",userAuth,async (req,res)=>{
-    const userId=req.userId
-    const courseId=req.body.courseId
-    await PurchasesModel.create({
-        userId,
-        courseId
-    })
+
+
+
+coursesRouter.post("/purchase", userAuth, async (req, res) => {
+    const userId = req.userId;
+    const courseId = req.body.courseId;
+
+    if (!courseId) {
+        return res.status(400).json({ msg: "CourseId is required" });
+    }
+
+    await UserModel.updateOne(
+        { _id: userId },
+        { $addToSet: { purchasedCourses: courseId } }
+    );
+
     res.json({
-        msg:"You are successfully Registered"
-    })
-})
+        msg: "Course purchased successfully"
+    });
+});
+
+
+
 
 coursesRouter.get("/preview", async function(req, res) {
     

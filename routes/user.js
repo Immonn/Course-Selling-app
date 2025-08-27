@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken")
 const { z } = require("zod")
 const { Router } = require("express")
 const userRouter = Router()
-const { UserModel, CoursesModel, PurchasesModel } = require("../db")
+const { UserModel, CoursesModel} = require("../db")
 const { JWT_USER_PASSWORD } = require("../config")
 const bcrypt=require("bcrypt")
 const {userAuth}=require("../middlewares/user")
@@ -81,21 +81,9 @@ userRouter.post("/in", async (req, res) => {
 userRouter.get("/purchases",userAuth,async(req,res)=>{
     const userId=req.userId
 
-    const purchases=await PurchasesModel.find({
-        userId
-    })
-    let purchasedCourseIds=[]
-    for (let i=0;i<purchases.length;i++){
-        purchasedCourseIds.push(purchases[i].courseId)
-    }
-
-    const coursesData=await CoursesModel.find({
-        _id:{$in : purchasedCourseIds}
-    })
-
+    const user=await UserModel.findById(userId).populate("purchasedCourses")
     res.json({
-        purchases,
-        coursesData
+        purchasedCourses:user.purchasedCourses
     })
 })
 
